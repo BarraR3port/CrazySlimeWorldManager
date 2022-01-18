@@ -10,10 +10,6 @@ import com.grinderwolf.swm.api.world.SlimeWorld;
 import com.grinderwolf.swm.api.world.properties.SlimePropertyMap;
 import com.grinderwolf.swm.nms.CraftSlimeWorld;
 import com.grinderwolf.swm.nms.SlimeNMS;
-import com.grinderwolf.swm.nms.v11601.v11601SlimeNMS;
-import com.grinderwolf.swm.nms.v11623.v11623SlimeNMS;
-import com.grinderwolf.swm.nms.v11645.v11645SlimeNMS;
-import com.grinderwolf.swm.nms.v117.v1170SlimeNMS;
 import com.grinderwolf.swm.nms.v1171.v1171SlimeNMS;
 import com.grinderwolf.swm.plugin.commands.CommandManager;
 import com.grinderwolf.swm.plugin.config.ConfigManager;
@@ -63,6 +59,7 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
     public void onLoad() {
         isPaperMC = checkIsPaper();
 
+        System.out.println("config..");
         try {
             ConfigManager.initialize();
         } catch (NullPointerException | IOException | ObjectMappingException ex) {
@@ -71,8 +68,10 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
             return;
         }
 
+        System.out.println("loader..");
         LoaderUtils.registerLoaders();
 
+        System.out.println("nms..");
         try {
             nms = getNMSBridge();
         } catch (InvalidVersionException ex) {
@@ -82,6 +81,7 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
 
         List<String> erroredWorlds = loadWorlds();
 
+        System.out.println("propsp..");
         // Default world override
         try {
             Properties props = new Properties();
@@ -91,13 +91,13 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
 
             if (erroredWorlds.contains(defaultWorldName)) {
                 Logging.error("Shutting down server, as the default world could not be loaded.");
-                System.exit(1);
+                Bukkit.getServer().shutdown();
             } else if (getServer().getAllowNether() && erroredWorlds.contains(defaultWorldName + "_nether")) {
                 Logging.error("Shutting down server, as the default nether world could not be loaded.");
-                System.exit(1);
+                Bukkit.getServer().shutdown();
             } else if (getServer().getAllowEnd() && erroredWorlds.contains(defaultWorldName + "_the_end")) {
                 Logging.error("Shutting down server, as the default end world could not be loaded.");
-                System.exit(1);
+                Bukkit.getServer().shutdown();
             }
 
             SlimeWorld defaultWorld = worlds.stream().filter(world -> world.getName().equals(defaultWorldName)).findFirst().orElse(null);
@@ -167,17 +167,6 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
 
         int dataVersion = Bukkit.getUnsafe().getDataVersion();
         switch(dataVersion) {
-            case 2566:
-            case 2567:
-                return new v11601SlimeNMS(isPaperMC);
-            case 2578:
-            case 2580:
-                return new v11623SlimeNMS(isPaperMC);
-            case 2584:
-            case 2586:
-                return new v11645SlimeNMS(isPaperMC, this);
-            case 2724:
-                return new v1170SlimeNMS(isPaperMC);
             case 2730:
                 return new v1171SlimeNMS(isPaperMC);
             default:

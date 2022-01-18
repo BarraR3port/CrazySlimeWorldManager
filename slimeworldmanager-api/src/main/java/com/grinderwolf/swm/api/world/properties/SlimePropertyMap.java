@@ -93,7 +93,7 @@ public class SlimePropertyMap {
     }
     
     public static SlimePropertyMap fromCompound(CompoundTag compound) {
-        return new SlimePropertyMap(compound);
+        return new SlimePropertyMap(compound.getValue());
     }
 
     @Override
