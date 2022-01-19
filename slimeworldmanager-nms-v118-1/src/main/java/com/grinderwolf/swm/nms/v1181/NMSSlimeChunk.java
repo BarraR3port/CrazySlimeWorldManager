@@ -1,16 +1,17 @@
-package com.grinderwolf.swm.nms.v1171;
+package com.grinderwolf.swm.nms.v1181;
 
 import com.flowpowered.nbt.CompoundMap;
 import com.flowpowered.nbt.CompoundTag;
-import com.flowpowered.nbt.ListTag;
 import com.flowpowered.nbt.LongArrayTag;
 import com.grinderwolf.swm.api.utils.NibbleArray;
 import com.grinderwolf.swm.api.world.SlimeChunk;
 import com.grinderwolf.swm.api.world.SlimeChunkSection;
 import com.grinderwolf.swm.nms.CraftSlimeChunkSection;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import net.minecraft.core.SectionPos;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LightLayer;
@@ -60,7 +61,7 @@ public class NMSSlimeChunk implements SlimeChunk {
             if (section != null) {
                 section.recalcBlockCounts();
 
-                if (!section.isEmpty()) { // If the section is empty, just ignore it to save space
+                if (section.hasOnlyAir()) { // If the section is empty, just ignore it to save space
                     // Block Light Nibble Array
                     NibbleArray blockLightArray = Converter.convertArray(lightEngine.getLayerListener(LightLayer.BLOCK).getDataLayerData(SectionPos.of(chunk.getPos(), sectionId)));
 
@@ -71,13 +72,15 @@ public class NMSSlimeChunk implements SlimeChunk {
 
                     // Block Data
                     PalettedContainer<BlockState> dataPaletteBlock = section.states;
-                    net.minecraft.nbt.CompoundTag blocksCompound = new net.minecraft.nbt.CompoundTag();
-                    dataPaletteBlock.write(blocksCompound, "Palette", "BlockStates");
-                    net.minecraft.nbt.ListTag paletteList = blocksCompound.getList("Palette", 10);
-                    ListTag<CompoundTag> palette = (ListTag<CompoundTag>) Converter.convertTag("", paletteList);
-                    long[] blockStates = blocksCompound.getLongArray("BlockStates");
 
-                    sections[sectionId] = new CraftSlimeChunkSection(null, null, palette, blockStates, null, null, blockLightArray, skyLightArray);
+                    final UnpooledByteBufAllocator allocator = new UnpooledByteBufAllocator(false);
+                    FriendlyByteBuf blockStates = new FriendlyByteBuf(allocator.buffer());
+                    FriendlyByteBuf biomes = new FriendlyByteBuf(allocator.buffer());
+
+                    section.states.write(blockStates);
+                    section.getBiomes().write(biomes);
+
+                    sections[sectionId] = new CraftSlimeChunkSection(null, null, null, null, blockStates.array(), biomes.array(), blockLightArray, skyLightArray);
                 }
             }
         }
@@ -102,7 +105,7 @@ public class NMSSlimeChunk implements SlimeChunk {
 
     @Override
     public int[] getBiomes() {
-        return chunk.getBiomes().writeBiomes();
+        return new int[0]; // todo biomes stored in sections now, could merge together here
     }
 
     @Override
@@ -110,9 +113,8 @@ public class NMSSlimeChunk implements SlimeChunk {
         List<CompoundTag> tileEntities = new ArrayList<>();
 
         for (BlockEntity entity : chunk.blockEntities.values()) {
-            net.minecraft.nbt.CompoundTag entityNbt = new net.minecraft.nbt.CompoundTag();
-            entity.save(entityNbt);
-            tileEntities.add((CompoundTag) Converter.convertTag(entityNbt.getString("name"), entityNbt));
+            final net.minecraft.nbt.CompoundTag entityNbt = entity.saveWithFullMetadata();
+            tileEntities.add((CompoundTag) Converter.convertTag(entityNbt.getString("id"), entityNbt));
         }
 
         return tileEntities;

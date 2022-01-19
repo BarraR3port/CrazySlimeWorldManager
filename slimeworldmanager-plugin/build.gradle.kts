@@ -6,6 +6,7 @@ dependencies {
     implementation(project(":slimeworldmanager-api"))
     implementation(project(":slimeworldmanager-nms-common"))
     implementation(project(":slimeworldmanager-nms-v117-1", "reobf"))
+    implementation(project(":slimeworldmanager-nms-v118-1", "reobf"))
 
     implementation("com.github.luben:zstd-jni:1.4.9-5")
     implementation("com.zaxxer:HikariCP:3.3.1")

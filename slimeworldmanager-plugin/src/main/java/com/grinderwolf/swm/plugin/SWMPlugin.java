@@ -11,6 +11,7 @@ import com.grinderwolf.swm.api.world.properties.SlimePropertyMap;
 import com.grinderwolf.swm.nms.CraftSlimeWorld;
 import com.grinderwolf.swm.nms.SlimeNMS;
 import com.grinderwolf.swm.nms.v1171.v1171SlimeNMS;
+import com.grinderwolf.swm.nms.v1181.v1181SlimeNMS;
 import com.grinderwolf.swm.plugin.commands.CommandManager;
 import com.grinderwolf.swm.plugin.config.ConfigManager;
 import com.grinderwolf.swm.plugin.config.WorldData;
@@ -169,6 +170,8 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
         switch(dataVersion) {
             case 2730:
                 return new v1171SlimeNMS(isPaperMC);
+            case 2865:
+                return new v1181SlimeNMS(isPaperMC);
             default:
                 throw new InvalidVersionException("" + dataVersion);
 

@@ -260,24 +260,24 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
                     }
 
                     // Biome array
-                    int[] biomes;
+                    int[] biomes = null;
 
                     if (version == 8 && worldVersion < 0x04) {
                         // Patch the v8 bug: biome array size is wrong for old worlds
                         dataStream.readInt();
                     }
 
-                    if (worldVersion >= 0x04) {
+                    if (worldVersion < 0x04) {
+                        byte[] byteBiomes = new byte[256];
+                        dataStream.read(byteBiomes);
+                        biomes = toIntArray(byteBiomes);
+                    } else if (worldVersion < 0x08) {
                         int biomesArrayLength = version >= 8 ? dataStream.readInt() : 256;
                         biomes = new int[biomesArrayLength];
 
                         for (int i = 0; i < biomes.length; i++) {
                             biomes[i] = dataStream.readInt();
                         }
-                    } else {
-                        byte[] byteBiomes = new byte[256];
-                        dataStream.read(byteBiomes);
-                        biomes = toIntArray(byteBiomes);
                     }
 
                     // Chunk Sections
@@ -321,14 +321,25 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
                 }
 
                 // Block data
-                byte[] blockArray;
-                NibbleArray dataArray;
+                byte[] blockArray = null;
+                NibbleArray dataArray = null;
 
-                ListTag<CompoundTag> paletteTag;
-                long[] blockStatesArray;
+                ListTag<CompoundTag> paletteTag = null;
+                long[] blockStatesArray = null;
 
-                // Post 1.13 block format
-                if (worldVersion >= 0x04) {
+                byte[] rawBlockStates = null;
+                byte[] rawBiomes = null;
+
+                if (worldVersion < 0x04) {
+                    blockArray = new byte[4096];
+                    dataStream.read(blockArray);
+
+                    // Block Data Nibble Array
+                    byte[] dataByteArray = new byte[2048];
+                    dataStream.read(dataByteArray);
+                    dataArray = new NibbleArray((dataByteArray));
+                } else if (worldVersion < 0x08) {
+                    // Post 1.13 block format
                     // Palette
                     int paletteLength = dataStream.readInt();
                     List<CompoundTag> paletteList = new ArrayList<>(paletteLength);
@@ -350,20 +361,11 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
                     for (int index = 0; index < blockStatesArrayLength; index++) {
                         blockStatesArray[index] = dataStream.readLong();
                     }
-
-                    blockArray = null;
-                    dataArray = null;
                 } else {
-                    blockArray = new byte[4096];
-                    dataStream.read(blockArray);
-
-                    // Block Data Nibble Array
-                    byte[] dataByteArray = new byte[2048];
-                    dataStream.read(dataByteArray);
-                    dataArray = new NibbleArray((dataByteArray));
-
-                    paletteTag = null;
-                    blockStatesArray = null;
+                    rawBlockStates = new byte[dataStream.readInt()];
+                    dataStream.read(rawBlockStates);
+                    rawBiomes = new byte[dataStream.readInt()];
+                    dataStream.read(rawBiomes);
                 }
 
                 // Sky Light Nibble Array
@@ -383,7 +385,7 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
                     dataStream.skip(hypixelBlocksLength);
                 }
 
-                chunkSectionArray[i] = new CraftSlimeChunkSection(blockArray, dataArray, paletteTag, blockStatesArray, blockLightArray, skyLightArray);
+                chunkSectionArray[i] = new CraftSlimeChunkSection(blockArray, dataArray, paletteTag, blockStatesArray, rawBlockStates, rawBiomes, blockLightArray, skyLightArray);
             }
         }
 

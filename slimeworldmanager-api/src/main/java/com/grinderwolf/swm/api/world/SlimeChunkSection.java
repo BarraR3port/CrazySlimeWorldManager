@@ -27,7 +27,7 @@ public interface SlimeChunkSection {
 
     /**
      * Returns the block palette of the chunk section, or
-     * <code>null</code> if it's a pre 1.13 world.
+     * <code>null</code> if it's a pre 1.13 world, or post 1.17.
      *
      * @return The block palette, contained inside a {@link ListTag}
      */
@@ -35,11 +35,15 @@ public interface SlimeChunkSection {
 
     /**
      * Returns all the states of the blocks of the chunk section, or
-     * <code>null</code> in case it's a pre 1.13 world.
+     * <code>null</code> in case it's a pre 1.13 world or post 1.17.
      *
      * @return A <code>long[]</code> with every block state.
      */
     long[] getBlockStates();
+
+    byte[] getBlockStatesRaw();
+
+    byte[] getBiomesRaw();
 
     /**
      * Returns the block light data.

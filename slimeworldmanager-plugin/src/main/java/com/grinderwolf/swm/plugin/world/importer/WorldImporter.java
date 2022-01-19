@@ -249,9 +249,9 @@ public class WorldImporter {
             }
 
             byte[] blocks = sectionTag.getByteArrayValue("Blocks").orElse(null);
-            NibbleArray dataArray;
-            ListTag<CompoundTag> paletteTag;
-            long[] blockStatesArray;
+            NibbleArray dataArray = null;
+            ListTag<CompoundTag> paletteTag = null;
+            long[] blockStatesArray = null;
 
             if (worldVersion < 0x04) {
                 dataArray = new NibbleArray(sectionTag.getByteArrayValue("Data").get());
@@ -259,12 +259,7 @@ public class WorldImporter {
                 if (isEmpty(blocks)) { // Just skip it
                     continue;
                 }
-
-                paletteTag = null;
-                blockStatesArray = null;
-            } else {
-                dataArray = null;
-
+            } else if (worldVersion < 0x08) {
                 paletteTag = (ListTag<CompoundTag>) sectionTag.getAsListTag("Palette").orElse(null);
                 blockStatesArray = sectionTag.getLongArrayValue("BlockStates").orElse(null);
 
@@ -276,7 +271,7 @@ public class WorldImporter {
             NibbleArray blockLightArray = sectionTag.getValue().containsKey("BlockLight") ? new NibbleArray(sectionTag.getByteArrayValue("BlockLight").get()) : null;
             NibbleArray skyLightArray = sectionTag.getValue().containsKey("SkyLight") ? new NibbleArray(sectionTag.getByteArrayValue("SkyLight").get()) : null;
 
-            sectionArray[index] = new CraftSlimeChunkSection(blocks, dataArray, paletteTag, blockStatesArray, blockLightArray, skyLightArray);
+            sectionArray[index] = new CraftSlimeChunkSection(blocks, dataArray, paletteTag, blockStatesArray, null, null, blockLightArray, skyLightArray);
         }
 
         for (SlimeChunkSection section : sectionArray) {

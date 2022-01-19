@@ -298,7 +298,10 @@ public class CraftSlimeWorld implements SlimeWorld {
                 }
 
                 // Block Data
-                if (worldVersion >= 0x04) {
+                if (worldVersion < 0x04) {
+                    outStream.write(section.getBlocks());
+                    outStream.write(section.getData().getBacking());
+                } else if (worldVersion < 0x08) {
                     // Palette
                     List<CompoundTag> palette = section.getPalette().getValue();
                     outStream.writeInt(palette.size());
@@ -319,8 +322,10 @@ public class CraftSlimeWorld implements SlimeWorld {
                         outStream.writeLong(value);
                     }
                 } else {
-                    outStream.write(section.getBlocks());
-                    outStream.write(section.getData().getBacking());
+                    outStream.writeInt(section.getBlockStatesRaw().length);
+                    outStream.write(section.getBlockStatesRaw());
+                    outStream.writeInt(section.getBiomesRaw().length);
+                    outStream.write(section.getBiomesRaw());
                 }
 
                 // Sky Light
