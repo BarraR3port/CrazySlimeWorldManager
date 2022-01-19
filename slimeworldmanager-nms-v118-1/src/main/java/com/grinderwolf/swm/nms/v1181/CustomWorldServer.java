@@ -13,6 +13,7 @@ import com.grinderwolf.swm.api.world.properties.SlimePropertyMap;
 import com.grinderwolf.swm.nms.CraftSlimeChunk;
 import com.grinderwolf.swm.nms.CraftSlimeWorld;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledDirectByteBuf;
@@ -21,6 +22,7 @@ import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -35,8 +37,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
@@ -45,6 +49,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.level.chunk.UpgradeData;
+import net.minecraft.world.level.chunk.storage.ChunkSerializer;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -66,6 +71,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -249,23 +255,38 @@ public class CustomWorldServer extends ServerLevel {
 //
 //        lightEngine.b(pos, true);
 
+        Registry<Biome> biomeRegistry = this.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
+        Codec<PalettedContainer<Biome>> codec = PalettedContainer.codec(biomeRegistry, biomeRegistry.byNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, (Biome) biomeRegistry.getOrThrow(Biomes.PLAINS), null);
+
         for (int sectionId = 0; sectionId < chunk.getSections().length; sectionId++) {
             SlimeChunkSection slimeSection = chunk.getSections()[sectionId];
 
             if (slimeSection != null) {
-                Registry<Biome> biomeRegistry = MinecraftServer.getServer().registryHolder.registryOrThrow(Registry.BIOME_REGISTRY);
-                LevelChunkSection section = new LevelChunkSection(sectionId << 4, biomeRegistry, null, null);
+                BlockState[] presetBlockStates = this.chunkPacketBlockController.getPresetBlockStates(this, pos, sectionId << 4); // todo this is for anti xray.. do we need it?
 
-                section.states.read(new FriendlyByteBuf(Unpooled.wrappedBuffer(slimeSection.getBlockStatesRaw())));
-                section.getBiomes().read(new FriendlyByteBuf(Unpooled.wrappedBuffer(slimeSection.getBiomesRaw())));
+                PalettedContainer<BlockState> blockPalette;
+                if (slimeSection.getBlockStatesTag() != null) {
+                    Codec<PalettedContainer<BlockState>> blockStateCodec = presetBlockStates == null ? ChunkSerializer.BLOCK_STATE_CODEC : PalettedContainer.codec(Block.BLOCK_STATE_REGISTRY, BlockState.CODEC, PalettedContainer.Strategy.SECTION_STATES, Blocks.AIR.defaultBlockState(), presetBlockStates);
+                    DataResult<PalettedContainer<BlockState>> dataresult = blockStateCodec.parse(NbtOps.INSTANCE, Converter.convertTag(slimeSection.getBlockStatesTag())).promotePartial((s) -> {
+                        System.out.println("Recoverable error when parsing section " + x + "," + z + ": " + s); // todo proper logging
+                    });
+                    blockPalette = dataresult.getOrThrow(false, System.err::println); // todo proper logging
+                } else {
+                    blockPalette = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES, presetBlockStates);
+                }
 
-//                if (slimeSection.getBlockLight() != null) {
-//                    lightEngine.a(EnumSkyBlock.b, SectionPosition.a(pos, sectionId), Converter.convertArray(slimeSection.getBlockLight()), true);
-//                }
-//
-//                if (slimeSection.getSkyLight() != null) {
-//                    lightEngine.a(EnumSkyBlock.a, SectionPosition.a(pos, sectionId), Converter.convertArray(slimeSection.getSkyLight()), true);
-//                }
+                PalettedContainer<Biome> biomePalette;
+
+                if (slimeSection.getBiomeTag() != null) {
+                    DataResult<PalettedContainer<Biome>> dataresult = codec.parse(NbtOps.INSTANCE, Converter.convertTag(slimeSection.getBiomeTag())).promotePartial((s) -> {
+                        System.out.println("Recoverable error when parsing section " + x + "," + z + ": " + s); // todo proper logging
+                    });
+                    biomePalette = dataresult.getOrThrow(false, System.err::println); // todo proper logging
+                } else {
+                    biomePalette = new PalettedContainer<>(biomeRegistry, (Biome) biomeRegistry.getOrThrow(Biomes.PLAINS), PalettedContainer.Strategy.SECTION_BIOMES, null); // Paper - Anti-Xray - Add preset biomes
+                }
+
+                LevelChunkSection section = new LevelChunkSection(sectionId << 4, blockPalette, biomePalette);
 
                 if (!isSectionEmptyAsync(section)) {
                     section.recalcBlockCounts();

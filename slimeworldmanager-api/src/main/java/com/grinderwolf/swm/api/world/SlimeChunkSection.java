@@ -10,6 +10,12 @@ import com.grinderwolf.swm.api.utils.NibbleArray;
 public interface SlimeChunkSection {
 
     /**
+     *
+     * @return
+     */
+    int getSectionIndex();
+
+    /**
      * Returns all the blocks of the chunk section, or <code>null</code>
      * in case it's a post 1.13 world.
      *
@@ -41,9 +47,9 @@ public interface SlimeChunkSection {
      */
     long[] getBlockStates();
 
-    byte[] getBlockStatesRaw();
+    CompoundTag getBlockStatesTag();
 
-    byte[] getBiomesRaw();
+    CompoundTag getBiomeTag();
 
     /**
      * Returns the block light data.

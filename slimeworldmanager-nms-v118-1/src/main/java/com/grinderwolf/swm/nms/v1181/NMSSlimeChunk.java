@@ -7,19 +7,23 @@ import com.grinderwolf.swm.api.utils.NibbleArray;
 import com.grinderwolf.swm.api.world.SlimeChunk;
 import com.grinderwolf.swm.api.world.SlimeChunkSection;
 import com.grinderwolf.swm.nms.CraftSlimeChunkSection;
-import io.netty.buffer.UnpooledByteBufAllocator;
+import com.mojang.serialization.Codec;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.PalettedContainer;
+import net.minecraft.world.level.chunk.storage.ChunkSerializer;
 import net.minecraft.world.level.entity.PersistentEntitySectionManager;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.lighting.LevelLightEngine;
@@ -55,6 +59,9 @@ public class NMSSlimeChunk implements SlimeChunk {
         SlimeChunkSection[] sections = new SlimeChunkSection[16];
         LevelLightEngine lightEngine = chunk.getLevel().getChunkSource().getLightEngine();
 
+        Registry<Biome> biomeRegistry = chunk.getLevel().registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
+        Codec<PalettedContainer<Biome>> codec = PalettedContainer.codec(biomeRegistry, biomeRegistry.byNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, (Biome) biomeRegistry.getOrThrow(Biomes.PLAINS), null);
+
         for (int sectionId = 0; sectionId < chunk.getSections().length; sectionId++) {
             LevelChunkSection section = chunk.getSections()[sectionId];
 
@@ -71,16 +78,14 @@ public class NMSSlimeChunk implements SlimeChunk {
                     // Tile/Entity Data
 
                     // Block Data
-                    PalettedContainer<BlockState> dataPaletteBlock = section.states;
+                    Tag blockStateData = ChunkSerializer.BLOCK_STATE_CODEC.encodeStart(NbtOps.INSTANCE, section.states).getOrThrow(false, System.err::println); // todo error handling
+                    Tag biomeData = codec.encodeStart(NbtOps.INSTANCE, section.getBiomes()).getOrThrow(false, System.err::println); // todo error handling
 
-                    final UnpooledByteBufAllocator allocator = new UnpooledByteBufAllocator(false);
-                    FriendlyByteBuf blockStates = new FriendlyByteBuf(allocator.buffer());
-                    FriendlyByteBuf biomes = new FriendlyByteBuf(allocator.buffer());
+                    CompoundTag blockStateTag = (CompoundTag) Converter.convertTag("", blockStateData);
+                    CompoundTag biomeTag = (CompoundTag) Converter.convertTag("", biomeData);
 
-                    section.states.write(blockStates);
-                    section.getBiomes().write(biomes);
 
-                    sections[sectionId] = new CraftSlimeChunkSection(null, null, null, null, blockStates.array(), biomes.array(), blockLightArray, skyLightArray);
+                    sections[sectionId] = new CraftSlimeChunkSection(sectionId, null, null, null, null, blockStateTag, biomeTag, blockLightArray, skyLightArray);
                 }
             }
         }

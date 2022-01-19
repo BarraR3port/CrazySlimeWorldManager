@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CraftSlimeChunkSection implements SlimeChunkSection {
 
+    private final int sectionIndex;
+
     // Pre 1.13 block data
     private final byte[] blocks;
     private final NibbleArray data;
@@ -20,8 +22,8 @@ public class CraftSlimeChunkSection implements SlimeChunkSection {
     private final long[] blockStates;
 
     // Post 1.17 block data
-    private final byte[] blockStatesRaw;
-    private final byte[] biomesRaw;
+    private final CompoundTag blockStatesTag;
+    private final CompoundTag biomeTag;
 
     private final NibbleArray blockLight;
     private final NibbleArray skyLight;

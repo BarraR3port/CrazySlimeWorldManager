@@ -51,8 +51,10 @@ public class WorldImporter {
             worldVersion = 0x05; // 1.14 world
         } else if (data.getVersion() < 2724) {
             worldVersion = 0x06; // 1.16 world
-        } else {
+        } else if (data.getVersion() <= 2730) {
             worldVersion = 0x07;
+        } else {
+            worldVersion = 0x08; // 1.18 world
         }
 
         // Chunks
@@ -184,13 +186,17 @@ public class WorldImporter {
                 CompoundTag globalCompound = (CompoundTag) nbtStream.readTag();
                 CompoundMap globalMap = globalCompound.getValue();
 
-                if (!globalMap.containsKey("Level")) {
-                    throw new RuntimeException("Missing Level tag?");
+                CompoundTag levelDataTag = new CompoundTag("Level", globalMap);
+                if (worldVersion < 0x08) {
+                    System.out.println(String.join(",", globalMap.keySet()));
+                    if (!globalMap.containsKey("Level")) {
+                        throw new RuntimeException("Missing Level tag?");
+                    }
+
+                    levelDataTag = (CompoundTag) globalMap.get("Level");
                 }
 
-                CompoundTag levelCompound = (CompoundTag) globalMap.get("Level");
-
-                return readChunk(levelCompound, worldVersion);
+                return readChunk(levelDataTag, worldVersion);
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
@@ -233,12 +239,23 @@ public class WorldImporter {
             heightMapsCompound.getValue().put("heightMap", new IntArrayTag("heightMap", heightMap));
         }
 
-        List<CompoundTag> tileEntities = ((ListTag<CompoundTag>) compound.getAsListTag("TileEntities")
-                .orElse(new ListTag<>("TileEntities", TagType.TAG_COMPOUND, new ArrayList<>()))).getValue();
-        List<CompoundTag> entities = ((ListTag<CompoundTag>) compound.getAsListTag("Entities")
-                .orElse(new ListTag<>("Entities", TagType.TAG_COMPOUND, new ArrayList<>()))).getValue();
-        ListTag<CompoundTag> sectionsTag = (ListTag<CompoundTag>) compound.getAsListTag("Sections").get();
-        SlimeChunkSection[] sectionArray = new SlimeChunkSection[16];
+        List<CompoundTag> tileEntities;
+        List<CompoundTag> entities;
+        ListTag<CompoundTag> sectionsTag;
+        if (worldVersion < 0x08) {
+            tileEntities = ((ListTag<CompoundTag>) compound.getAsListTag("TileEntities")
+                    .orElse(new ListTag<>("TileEntities", TagType.TAG_COMPOUND, new ArrayList<>()))).getValue();
+            entities = ((ListTag<CompoundTag>) compound.getAsListTag("Entities")
+                    .orElse(new ListTag<>("Entities", TagType.TAG_COMPOUND, new ArrayList<>()))).getValue();
+            sectionsTag = (ListTag<CompoundTag>) compound.getAsListTag("Sections").get();
+        } else {
+            tileEntities = ((ListTag<CompoundTag>) compound.getAsListTag("block_entities")
+                    .orElse(new ListTag<>("block_entities", TagType.TAG_COMPOUND, new ArrayList<>()))).getValue();
+            entities = ((ListTag<CompoundTag>) compound.getAsListTag("entities")
+                    .orElse(new ListTag<>("entities", TagType.TAG_COMPOUND, new ArrayList<>()))).getValue();
+            sectionsTag = (ListTag<CompoundTag>) compound.getAsListTag("sections").get();
+        }
+        SlimeChunkSection[] sectionArray = new SlimeChunkSection[sectionsTag.getValue().size()];
 
         for (CompoundTag sectionTag : sectionsTag.getValue()) {
             int index = sectionTag.getByteValue("Y").get();
@@ -253,6 +270,9 @@ public class WorldImporter {
             ListTag<CompoundTag> paletteTag = null;
             long[] blockStatesArray = null;
 
+            CompoundTag blockStatesTag = null;
+            CompoundTag biomeTag = null;
+
             if (worldVersion < 0x04) {
                 dataArray = new NibbleArray(sectionTag.getByteArrayValue("Data").get());
 
@@ -266,12 +286,15 @@ public class WorldImporter {
                 if (paletteTag == null || blockStatesArray == null || isEmpty(blockStatesArray)) { // Skip it
                     continue;
                 }
+            } else {
+                blockStatesTag = sectionTag.getAsCompoundTag("block_states").get();
+                biomeTag = sectionTag.getAsCompoundTag("biomes").get();
             }
 
             NibbleArray blockLightArray = sectionTag.getValue().containsKey("BlockLight") ? new NibbleArray(sectionTag.getByteArrayValue("BlockLight").get()) : null;
             NibbleArray skyLightArray = sectionTag.getValue().containsKey("SkyLight") ? new NibbleArray(sectionTag.getByteArrayValue("SkyLight").get()) : null;
 
-            sectionArray[index] = new CraftSlimeChunkSection(blocks, dataArray, paletteTag, blockStatesArray, null, null, blockLightArray, skyLightArray);
+            sectionArray[index] = new CraftSlimeChunkSection(index, blocks, dataArray, paletteTag, blockStatesArray, blockStatesTag, biomeTag, blockLightArray, skyLightArray);
         }
 
         for (SlimeChunkSection section : sectionArray) {

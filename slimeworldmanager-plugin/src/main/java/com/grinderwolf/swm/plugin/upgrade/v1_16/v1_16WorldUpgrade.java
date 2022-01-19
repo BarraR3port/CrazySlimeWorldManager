@@ -39,7 +39,7 @@ public class v1_16WorldUpgrade implements Upgrade {
                     int bitsPerBlock = Math.max(4, ceillog2(section.getPalette().getValue().size()));
 
                     if (!isPowerOfTwo(bitsPerBlock)) {
-                        section = new CraftSlimeChunkSection(null, null, section.getPalette(),
+                        section = new CraftSlimeChunkSection(sectionIndex, null, null, section.getPalette(),
                                 addPadding(4096, bitsPerBlock, section.getBlockStates()), null, null,
                                 section.getBlockLight(), section.getSkyLight());
                         chunk.getSections()[sectionIndex] = section;

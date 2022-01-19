@@ -266,74 +266,113 @@ public class CraftSlimeWorld implements SlimeWorld {
 
             // Biomes
             int[] biomes = chunk.getBiomes();
-            if (worldVersion >= 0x04) {
+            if (worldVersion >= 0x04 && worldVersion < 0x08) {
                 outStream.writeInt(biomes.length);
-            }
 
-            for (int biome : biomes) {
-                outStream.writeInt(biome);
+                for (int biome : biomes) {
+                    outStream.writeInt(biome);
+                }
             }
 
             // Chunk sections
             SlimeChunkSection[] sections = chunk.getSections();
-            BitSet sectionBitmask = new BitSet(16);
+            if (worldVersion < 0x08) {
+                BitSet sectionBitmask = new BitSet(16);
 
-            for (int i = 0; i < sections.length; i++) {
-                sectionBitmask.set(i, sections[i] != null);
-            }
-
-            writeBitSetAsBytes(outStream, sectionBitmask, 2);
-
-            for (SlimeChunkSection section : sections) {
-                if (section == null) {
-                    continue;
+                for (int i = 0; i < sections.length; i++) {
+                    sectionBitmask.set(i, sections[i] != null);
                 }
 
-                // Block Light
-                boolean hasBlockLight = section.getBlockLight() != null;
-                outStream.writeBoolean(hasBlockLight);
+                writeBitSetAsBytes(outStream, sectionBitmask, 2);
 
-                if (hasBlockLight) {
-                    outStream.write(section.getBlockLight().getBacking());
-                }
-
-                // Block Data
-                if (worldVersion < 0x04) {
-                    outStream.write(section.getBlocks());
-                    outStream.write(section.getData().getBacking());
-                } else if (worldVersion < 0x08) {
-                    // Palette
-                    List<CompoundTag> palette = section.getPalette().getValue();
-                    outStream.writeInt(palette.size());
-
-                    for (CompoundTag value : palette) {
-                        byte[] serializedValue = serializeCompoundTag(value);
-
-                        outStream.writeInt(serializedValue.length);
-                        outStream.write(serializedValue);
+                for (SlimeChunkSection section : sections) {
+                    if (section == null) {
+                        continue;
                     }
 
-                    // Block states
-                    long[] blockStates = section.getBlockStates();
+                    // Block Light
+                    boolean hasBlockLight = section.getBlockLight() != null;
+                    outStream.writeBoolean(hasBlockLight);
 
-                    outStream.writeInt(blockStates.length);
-
-                    for (long value : section.getBlockStates()) {
-                        outStream.writeLong(value);
+                    if (hasBlockLight) {
+                        outStream.write(section.getBlockLight().getBacking());
                     }
-                } else {
-                    outStream.writeInt(section.getBlockStatesRaw().length);
-                    outStream.write(section.getBlockStatesRaw());
-                    outStream.writeInt(section.getBiomesRaw().length);
-                    outStream.write(section.getBiomesRaw());
+
+                    // Block Data
+                    if (worldVersion < 0x04) {
+                        outStream.write(section.getBlocks());
+                        outStream.write(section.getData().getBacking());
+                    } else if (worldVersion < 0x08) {
+                        // Palette
+                        List<CompoundTag> palette = section.getPalette().getValue();
+                        outStream.writeInt(palette.size());
+
+                        for (CompoundTag value : palette) {
+                            byte[] serializedValue = serializeCompoundTag(value);
+
+                            outStream.writeInt(serializedValue.length);
+                            outStream.write(serializedValue);
+                        }
+
+                        // Block states
+                        long[] blockStates = section.getBlockStates();
+
+                        outStream.writeInt(blockStates.length);
+
+                        for (long value : section.getBlockStates()) {
+                            outStream.writeLong(value);
+                        }
+                    } else {
+                        byte[] serializedBlockStates = serializeCompoundTag(section.getBlockStatesTag());
+                        outStream.writeInt(serializedBlockStates.length);
+                        outStream.write(serializedBlockStates);
+
+                        byte[] serializedBiomes = serializeCompoundTag(section.getBiomeTag());
+                        outStream.writeInt(serializedBiomes.length);
+                        outStream.write(serializedBiomes);
+                    }
+
+                    // Sky Light
+                    boolean hasSkyLight = section.getSkyLight() != null;
+                    outStream.writeBoolean(hasSkyLight);
+
+                    if (hasSkyLight) {
+                        outStream.write(section.getSkyLight().getBacking());
+                    }
                 }
+            } else {
+                outStream.writeInt(sections.length);
+                outStream.writeInt(Math.toIntExact(Arrays.stream(sections).filter(Objects::nonNull).count()));
+                for (SlimeChunkSection section : sections) {
+                    if (section == null) {
+                        continue;
+                    }
+                    outStream.writeInt(section.getSectionIndex());
 
-                // Sky Light
-                boolean hasSkyLight = section.getSkyLight() != null;
-                outStream.writeBoolean(hasSkyLight);
+                    // Block Light
+                    boolean hasBlockLight = section.getBlockLight() != null;
+                    outStream.writeBoolean(hasBlockLight);
 
-                if (hasSkyLight) {
-                    outStream.write(section.getSkyLight().getBacking());
+                    if (hasBlockLight) {
+                        outStream.write(section.getBlockLight().getBacking());
+                    }
+
+                    // Block Data
+                    byte[] serializedBlockStates = serializeCompoundTag(section.getBlockStatesTag());
+                    outStream.writeInt(serializedBlockStates.length);
+                    outStream.write(serializedBlockStates);
+
+                    byte[] serializedBiomes = serializeCompoundTag(section.getBiomeTag());
+                    outStream.writeInt(serializedBiomes.length);
+                    outStream.write(serializedBiomes);
+
+                    // Sky Light
+                    boolean hasSkyLight = section.getSkyLight() != null;
+                    outStream.writeBoolean(hasSkyLight);
+
+                    if (hasSkyLight) {
+                        outStream.write(section.getSkyLight().getBacking());
+                    }
                 }
             }
         }

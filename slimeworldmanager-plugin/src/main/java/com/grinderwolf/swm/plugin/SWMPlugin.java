@@ -60,7 +60,6 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
     public void onLoad() {
         isPaperMC = checkIsPaper();
 
-        System.out.println("config..");
         try {
             ConfigManager.initialize();
         } catch (NullPointerException | IOException | ObjectMappingException ex) {
@@ -69,10 +68,8 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
             return;
         }
 
-        System.out.println("loader..");
         LoaderUtils.registerLoaders();
 
-        System.out.println("nms..");
         try {
             nms = getNMSBridge();
         } catch (InvalidVersionException ex) {
@@ -82,7 +79,6 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
 
         List<String> erroredWorlds = loadWorlds();
 
-        System.out.println("propsp..");
         // Default world override
         try {
             Properties props = new Properties();

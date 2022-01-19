@@ -262,26 +262,26 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
                     // Biome array
                     int[] biomes = null;
 
-                    if (version == 8 && worldVersion < 0x04) {
+                    if (version == 8 && worldVersion < 0x08) {
                         // Patch the v8 bug: biome array size is wrong for old worlds
                         dataStream.readInt();
-                    }
 
-                    if (worldVersion < 0x04) {
-                        byte[] byteBiomes = new byte[256];
-                        dataStream.read(byteBiomes);
-                        biomes = toIntArray(byteBiomes);
-                    } else if (worldVersion < 0x08) {
-                        int biomesArrayLength = version >= 8 ? dataStream.readInt() : 256;
-                        biomes = new int[biomesArrayLength];
+                        if (worldVersion < 0x04) {
+                            byte[] byteBiomes = new byte[256];
+                            dataStream.read(byteBiomes);
+                            biomes = toIntArray(byteBiomes);
+                        } else {
+                            int biomesArrayLength = version >= 8 ? dataStream.readInt() : 256;
+                            biomes = new int[biomesArrayLength];
 
-                        for (int i = 0; i < biomes.length; i++) {
-                            biomes[i] = dataStream.readInt();
+                            for (int i = 0; i < biomes.length; i++) {
+                                biomes[i] = dataStream.readInt();
+                            }
                         }
                     }
 
                     // Chunk Sections
-                    SlimeChunkSection[] sections = readChunkSections(dataStream, worldVersion, version);
+                    SlimeChunkSection[] sections = worldVersion < 0x08 ? readChunkSections(dataStream, worldVersion, version) : readChunkSectionsNew(dataStream, worldVersion, version);
 
                     chunkMap.put(((long) minZ + z) * Integer.MAX_VALUE + ((long) minX + x), new CraftSlimeChunk(worldName,minX + x, minZ + z,
                             sections, heightMaps, biomes, new ArrayList<>(), new ArrayList<>()));
@@ -301,13 +301,64 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
         return ret;
     }
 
+    private static SlimeChunkSection[] readChunkSectionsNew(DataInputStream dataStream, int worldVersion, int version) throws IOException {
+        int maxSections = dataStream.readInt();
+        int sectionCount = dataStream.readInt();
+        SlimeChunkSection[] chunkSectionArray = new SlimeChunkSection[maxSections];
+
+        for (int i = 0; i < sectionCount; i++) {
+            int y = dataStream.readInt();
+
+            // Block Light Nibble Array
+            NibbleArray blockLightArray;
+
+            if (version < 5 || dataStream.readBoolean()) {
+                byte[] blockLightByteArray = new byte[2048];
+                dataStream.read(blockLightByteArray);
+                blockLightArray = new NibbleArray((blockLightByteArray));
+            } else {
+                blockLightArray = null;
+            }
+
+            // Block data
+            byte[] blockStateData = new byte[dataStream.readInt()];
+            dataStream.read(blockStateData);
+            CompoundTag blockStateTag = readCompoundTag(blockStateData);
+
+            byte[] biomeData = new byte[dataStream.readInt()];
+            dataStream.read(biomeData);
+            CompoundTag biomeTag = readCompoundTag(biomeData);
+
+            // Sky Light Nibble Array
+            NibbleArray skyLightArray;
+
+            if (version < 5 || dataStream.readBoolean()) {
+                byte[] skyLightByteArray = new byte[2048];
+                dataStream.read(skyLightByteArray);
+                skyLightArray = new NibbleArray((skyLightByteArray));
+            } else {
+                skyLightArray = null;
+            }
+
+            // HypixelBlocks 3
+            if (version < 4) {
+                short hypixelBlocksLength = dataStream.readShort();
+                dataStream.skip(hypixelBlocksLength);
+            }
+
+            chunkSectionArray[y] = new CraftSlimeChunkSection(y, null, null, null, null, blockStateTag, biomeTag, blockLightArray, skyLightArray);
+        }
+
+        return chunkSectionArray;
+    }
+
     private static SlimeChunkSection[] readChunkSections(DataInputStream dataStream, byte worldVersion, int version) throws IOException {
         SlimeChunkSection[] chunkSectionArray = new SlimeChunkSection[16];
         byte[] sectionBitmask = new byte[2];
         dataStream.read(sectionBitmask);
         BitSet sectionBitset = BitSet.valueOf(sectionBitmask);
 
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < sectionBitset.size(); i++) {
             if (sectionBitset.get(i)) {
                 // Block Light Nibble Array
                 NibbleArray blockLightArray;
@@ -327,8 +378,8 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
                 ListTag<CompoundTag> paletteTag = null;
                 long[] blockStatesArray = null;
 
-                byte[] rawBlockStates = null;
-                byte[] rawBiomes = null;
+                CompoundTag blockStateTag = null;
+                CompoundTag biomeTag = null;
 
                 if (worldVersion < 0x04) {
                     blockArray = new byte[4096];
@@ -362,10 +413,7 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
                         blockStatesArray[index] = dataStream.readLong();
                     }
                 } else {
-                    rawBlockStates = new byte[dataStream.readInt()];
-                    dataStream.read(rawBlockStates);
-                    rawBiomes = new byte[dataStream.readInt()];
-                    dataStream.read(rawBiomes);
+                    throw new RuntimeException();
                 }
 
                 // Sky Light Nibble Array
@@ -385,7 +433,7 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
                     dataStream.skip(hypixelBlocksLength);
                 }
 
-                chunkSectionArray[i] = new CraftSlimeChunkSection(blockArray, dataArray, paletteTag, blockStatesArray, rawBlockStates, rawBiomes, blockLightArray, skyLightArray);
+                chunkSectionArray[i] = new CraftSlimeChunkSection(i, blockArray, dataArray, paletteTag, blockStatesArray, blockStateTag, biomeTag, blockLightArray, skyLightArray);
             }
         }
 

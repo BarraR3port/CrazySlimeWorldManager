@@ -430,7 +430,7 @@ public class SWMImporter {
             NibbleArray blockLightArray = sectionTag.getValue().containsKey("BlockLight") ? new NibbleArray(sectionTag.getByteArrayValue("BlockLight").get()) : null;
             NibbleArray skyLightArray = sectionTag.getValue().containsKey("SkyLight") ? new NibbleArray(sectionTag.getByteArrayValue("SkyLight").get()) : null;
 
-            sectionArray[index] = new CraftSlimeChunkSection(blocks, dataArray, paletteTag, blockStatesArray, null, null, blockLightArray, skyLightArray);
+            sectionArray[index] = new CraftSlimeChunkSection(index, blocks, dataArray, paletteTag, blockStatesArray, null, null, blockLightArray, skyLightArray);
         }
 
         for (SlimeChunkSection section : sectionArray) {
