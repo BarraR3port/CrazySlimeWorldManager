@@ -10,6 +10,7 @@ pluginManagement {
 rootProject.name = "slimeworldmanager"
 include(":slimeworldmanager-api")
 include(":slimeworldmanager-classmodifier")
+include(":slimeworldmanager-classmodifierapi")
 include(":slimeworldmanager-plugin")
 include(":slimeworldmanager-importer")
 include(":slimeworldmanager-nms-v117-1")

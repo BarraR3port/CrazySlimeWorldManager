@@ -1,7 +1,5 @@
 package com.grinderwolf.swm.clsm;
 
-import com.mojang.datafixers.util.Either;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BooleanSupplier;
 
@@ -28,7 +26,7 @@ public class ClassModifier {
         }
 
         return CompletableFuture.supplyAsync(() ->
-            Either.left(customLoader.getChunk(world, x, z))
+            customLoader.getChunk(world, x, z)
         );
     }
 

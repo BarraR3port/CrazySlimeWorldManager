@@ -2,6 +2,7 @@ package com.grinderwolf.swm.nms.v1171;
 
 import com.grinderwolf.swm.clsm.CLSMBridge;
 import com.grinderwolf.swm.clsm.ClassModifier;
+import com.mojang.datafixers.util.Either;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.server.MinecraftServer;
@@ -18,7 +19,7 @@ public class CraftCLSMBridge implements CLSMBridge {
     @Override
     public Object getChunk(Object worldObject, int x, int z) {
         CustomWorldServer world = (CustomWorldServer) worldObject;
-        return world.getImposterChunk(x, z);
+        return Either.left(world.getImposterChunk(x, z));
     }
 
     @Override

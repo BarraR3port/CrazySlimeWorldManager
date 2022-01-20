@@ -27,10 +27,6 @@ allprojects {
         maven("https://repo.rapture.pw/repository/maven-releases/")
     }
 
-    dependencies {
-        implementation("com.flowpowered:flow-nbt:2.0.2")
-    }
-
     tasks.withType<JavaCompile> {
         options.encoding = Charsets.UTF_8.name()
         options.release.set(16)

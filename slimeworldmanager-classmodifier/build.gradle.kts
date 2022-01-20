@@ -4,9 +4,16 @@ plugins {
 
 dependencies {
     implementation("org.javassist:javassist:3.28.0-GA")
-    implementation("org.yaml:snakeyaml:1.26")
-    compileOnly("io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT")
-    compileOnly("io.papermc.paper:paper:1.17.1-R0.1-SNAPSHOT")
+    implementation("org.yaml:snakeyaml:1.29")
+    compileOnly(project(":slimeworldmanager-classmodifierapi"))
+}
+
+sourceSets {
+    main {
+        resources {
+            include("**/*")
+        }
+    }
 }
 
 tasks {

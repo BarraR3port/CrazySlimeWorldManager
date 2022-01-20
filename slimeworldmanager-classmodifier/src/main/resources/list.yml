@@ -1,13 +1,19 @@
 # 1.17
-net/minecraft/server/level/PlayerChunkMap:
-  - saveChunk(net.minecraft.world.level.chunk.IChunkAccess)@v1_17_R1/PlayerChunkMap_saveChunk.txt
-  - f(net.minecraft.world.level.ChunkCoordIntPair)@v1_17_R1/PlayerChunkMap_loadChunk.txt
-net/minecraft/world/entity/npc/MobSpawnerTrader:
-  - a(net.minecraft.server.level.WorldServer,boolean, boolean)@v1_17_R1/MobSpawnerTrader_tickRaids.txt
-net/minecraft/world/level/saveddata/PersistentBase:
-  - a(java.io.File)@v1_17_R1/PersistentBase_saveData.txt
-net/minecraft/server/MinecraftServer:
-  - loadWorld(java.lang.String)@v1_17_R1/MinecraftServer_loadWorlds.txt
-  - getGamemode()@v1_17_R1/MinecraftServer_getGamemode.txt
-org/bukkit/craftbukkit/v1_17_R1/CraftServer:
-  - addWorld(org.bukkit.World)@v1_17_R1/CraftServer_addWorld.txt
+v1_17_R1:
+  net/minecraft/server/level/PlayerChunkMap:
+    - saveChunk(net.minecraft.world.level.chunk.IChunkAccess)@v1_17_R1/PlayerChunkMap_saveChunk.txt
+    - f(net.minecraft.world.level.ChunkCoordIntPair)@v1_17_R1/PlayerChunkMap_loadChunk.txt
+  net/minecraft/world/entity/npc/MobSpawnerTrader:
+    - a(net.minecraft.server.level.WorldServer,boolean, boolean)@v1_17_R1/MobSpawnerTrader_tickRaids.txt
+  net/minecraft/world/level/saveddata/PersistentBase:
+    - a(java.io.File)@v1_17_R1/PersistentBase_saveData.txt
+  net/minecraft/server/MinecraftServer:
+    - loadWorld(java.lang.String)@v1_17_R1/MinecraftServer_loadWorlds.txt
+    - getGamemode()@v1_17_R1/MinecraftServer_getGamemode.txt
+  org/bukkit/craftbukkit/v1_17_R1/CraftServer:
+    - addWorld(org.bukkit.World)@v1_17_R1/CraftServer_addWorld.txt
+
+v1_18_R1:
+  net/minecraft/server/level/PlayerChunkMap:
+    - a(net.minecraft.world.level.chunk.IChunkAccess)@v1_18_R1/PlayerChunkMap_saveChunk.txt
+    - g(net.minecraft.world.level.ChunkCoordIntPair)@v1_18_R1/PlayerChunkMap_loadChunk.txt

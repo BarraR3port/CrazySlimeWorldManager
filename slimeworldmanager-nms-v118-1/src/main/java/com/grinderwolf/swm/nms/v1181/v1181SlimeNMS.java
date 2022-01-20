@@ -93,7 +93,7 @@ public class v1181SlimeNMS implements SlimeNMS {
     public v1181SlimeNMS(boolean isPaper) {
         try {
             isPaperMC = isPaper;
-//            CraftCLSMBridge.initialize(this);
+            CraftCLSMBridge.initialize(this);
         } catch (NoClassDefFoundError ex) {
             LOGGER.error("Failed to find ClassModifier classes. Are you sure you installed it correctly?", ex);
             Bukkit.getServer().shutdown();

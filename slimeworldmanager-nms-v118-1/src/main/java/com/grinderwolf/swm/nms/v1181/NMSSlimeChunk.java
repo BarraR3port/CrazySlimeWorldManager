@@ -56,7 +56,7 @@ public class NMSSlimeChunk implements SlimeChunk {
 
     @Override
     public SlimeChunkSection[] getSections() {
-        SlimeChunkSection[] sections = new SlimeChunkSection[16];
+        SlimeChunkSection[] sections = new SlimeChunkSection[this.chunk.getSectionsCount()];
         LevelLightEngine lightEngine = chunk.getLevel().getChunkSource().getLightEngine();
 
         Registry<Biome> biomeRegistry = chunk.getLevel().registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);

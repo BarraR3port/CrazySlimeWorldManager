@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":slimeworldmanager-nms-v117-1", "reobf"))
     implementation(project(":slimeworldmanager-nms-v118-1", "reobf"))
 
+    implementation("com.flowpowered:flow-nbt:2.0.2")
     implementation("com.github.luben:zstd-jni:1.4.9-5")
     implementation("com.zaxxer:HikariCP:3.3.1")
     implementation("org.mongodb:mongo-java-driver:3.11.0-rc0")

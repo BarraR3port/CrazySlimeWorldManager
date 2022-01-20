@@ -250,7 +250,7 @@ public class CustomWorldServer extends ServerLevel {
         ChunkPos pos = new ChunkPos(x, z);
 
         // Chunk sections
-        LevelChunkSection[] sections = new LevelChunkSection[16];
+        LevelChunkSection[] sections = new LevelChunkSection[this.getSectionsCount()];
 //        LightEngine lightEngine = getChunkProvider().getLightEngine();
 //
 //        lightEngine.b(pos, true);
