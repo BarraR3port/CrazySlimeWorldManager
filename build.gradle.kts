@@ -19,12 +19,8 @@ allprojects {
         mavenLocal()
         mavenCentral()
 
-        maven("https://repo.rapture.pw/repository/private-snapshots/")
-        maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
         maven("https://papermc.io/repo/repository/maven-public/")
-        maven("https://repo.glaremasters.me/repository/concuncan/")
         maven("https://repo.codemc.io/repository/nms/")
-        maven("https://repo.rapture.pw/repository/maven-releases/")
     }
 
     tasks.withType<JavaCompile> {
