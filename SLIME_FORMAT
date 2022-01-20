@@ -67,7 +67,12 @@ Custom chunk format
   1 byte (boolean) - has block light
   [if has block light]
     2048 bytes - block light
-  [if world mc version is 1.13 or newer]
+  [if world mc version is 1.18 or newer]
+    4 bytes (int) - block states byte size
+    <block states component>
+    4 bytes (int) - biomes byte size
+    <biomes component>
+  [else if world mc version is 1.13 or newer]
     4 bytes (int) - block palette array size
     <array of block palette nbt compounds>
       same format as mc, without being inside a global compound
