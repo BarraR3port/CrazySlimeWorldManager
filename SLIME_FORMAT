@@ -56,7 +56,14 @@ Custom chunk format
 [else]
   256 ints - heightmap
   256 bytes - biomes
-2 bytes - sections bitmask (bottom to top)
+[if world mc version is 1.18 or newer]
+  4 bytes (int) total chunk height
+  4 bytes (int) total sections saved
+[else]
+  2 bytes - sections bitmask (bottom to top)
+
+  [if world mc version is 1.18 or newer]
+    4 bytes (int) y position of section
   1 byte (boolean) - has block light
   [if has block light]
     2048 bytes - block light
