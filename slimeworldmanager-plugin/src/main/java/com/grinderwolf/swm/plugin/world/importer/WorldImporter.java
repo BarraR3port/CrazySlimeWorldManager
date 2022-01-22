@@ -49,12 +49,14 @@ public class WorldImporter {
             worldVersion = 0x04; // 1.13 world
         } else if (data.getVersion() < 2566) {
             worldVersion = 0x05; // 1.14 world
-        } else if (data.getVersion() < 2724) {
+        } else if (data.getVersion() <= 2586) {
             worldVersion = 0x06; // 1.16 world
         } else if (data.getVersion() <= 2730) {
             worldVersion = 0x07;
-        } else {
+        } else if (data.getVersion() <= 2865) {
             worldVersion = 0x08; // 1.18 world
+        } else {
+            throw new UnsupportedOperationException("Unsupported world version: " + data.getVersion());
         }
 
         // Chunks
