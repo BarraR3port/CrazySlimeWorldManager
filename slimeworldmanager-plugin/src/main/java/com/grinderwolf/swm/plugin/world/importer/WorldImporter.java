@@ -27,6 +27,28 @@ public class WorldImporter {
     private static final Pattern MAP_FILE_PATTERN = Pattern.compile("^(?:map_([0-9]*).dat)$");
     private static final int SECTOR_SIZE = 4096;
 
+    private static byte convertDataVersionToWorldVersion(int dataVersion) {
+        if (dataVersion == -1) { // DataVersion tag was added in 1.9
+            return 0x01;
+        } else if (dataVersion < 818) {
+            return 0x02; // 1.9 world
+        } else if (dataVersion < 1501) {
+            return 0x03; // 1.11 world
+        } else if (dataVersion < 1517) {
+            return 0x04; // 1.13 world
+        } else if (dataVersion < 2566) {
+            return 0x05; // 1.14 world
+        } else if (dataVersion <= 2586) {
+            return 0x06; // 1.16 world
+        } else if (dataVersion <= 2730) {
+            return 0x07;
+        } else if (dataVersion <= 2865) {
+            return 0x08; // 1.18 world
+        } else {
+            throw new UnsupportedOperationException("Unsupported world version: " + dataVersion);
+        }
+    }
+
     public static CraftSlimeWorld readFromDirectory(File worldDir) throws InvalidWorldException, IOException {
         File levelFile = new File(worldDir, "level.dat");
 
@@ -37,27 +59,7 @@ public class WorldImporter {
         LevelData data = readLevelData(levelFile);
 
         // World version
-        byte worldVersion;
-
-        if (data.getVersion() == -1) { // DataVersion tag was added in 1.9
-            worldVersion = 0x01;
-        } else if (data.getVersion() < 818) {
-            worldVersion = 0x02; // 1.9 world
-        } else if (data.getVersion() < 1501) {
-            worldVersion = 0x03; // 1.11 world
-        } else if (data.getVersion() < 1517) {
-            worldVersion = 0x04; // 1.13 world
-        } else if (data.getVersion() < 2566) {
-            worldVersion = 0x05; // 1.14 world
-        } else if (data.getVersion() <= 2586) {
-            worldVersion = 0x06; // 1.16 world
-        } else if (data.getVersion() <= 2730) {
-            worldVersion = 0x07;
-        } else if (data.getVersion() <= 2865) {
-            worldVersion = 0x08; // 1.18 world
-        } else {
-            throw new UnsupportedOperationException("Unsupported world version: " + data.getVersion());
-        }
+        byte worldVersion = convertDataVersionToWorldVersion(data.getVersion());
 
         // Chunks
         File regionDir = new File(worldDir, "region");
@@ -189,12 +191,7 @@ public class WorldImporter {
                 CompoundMap globalMap = globalCompound.getValue();
 
                 CompoundTag levelDataTag = new CompoundTag("Level", globalMap);
-                if (worldVersion < 0x08) {
-                    System.out.println(String.join(",", globalMap.keySet()));
-                    if (!globalMap.containsKey("Level")) {
-                        throw new RuntimeException("Missing Level tag?");
-                    }
-
+                if (globalMap.containsKey("Level")) {
                     levelDataTag = (CompoundTag) globalMap.get("Level");
                 }
 
@@ -209,6 +206,15 @@ public class WorldImporter {
     private static SlimeChunk readChunk(CompoundTag compound, byte worldVersion) {
         int chunkX = compound.getAsIntTag("xPos").get().getValue();
         int chunkZ = compound.getAsIntTag("zPos").get().getValue();
+
+        if (worldVersion >= 0x08) { // 1.18 worlds should have a DataVersion tag, we can check if the chunk has been converted to match the world
+            int dataVersion = convertDataVersionToWorldVersion(compound.getAsIntTag("DataVersion").map(IntTag::getValue).orElse(-1));
+            if (dataVersion != worldVersion) {
+                System.err.println("Cannot load chunk at " + chunkX + "," + chunkZ + ": data version " + dataVersion + " does not match world version " + worldVersion);
+                return null;
+            }
+        }
+
         Optional<String> status = compound.getStringValue("Status");
 
         if (status.isPresent() && !status.get().equals("postprocessed") && !status.get().startsWith("full")) {
