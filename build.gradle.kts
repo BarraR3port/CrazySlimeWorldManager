@@ -21,6 +21,8 @@ allprojects {
 
         maven("https://papermc.io/repo/repository/maven-public/")
         maven("https://repo.codemc.io/repository/nms/")
+        maven("https://repo.rapture.pw/repository/maven-releases/")
+        maven("https://repo.glaremasters.me/repository/concuncan/")
     }
 
     tasks.withType<JavaCompile> {
