@@ -94,6 +94,16 @@ public class NMSSlimeChunk implements SlimeChunk {
     }
 
     @Override
+    public int getMinSection() {
+        return this.chunk.getMinSection();
+    }
+
+    @Override
+    public int getMaxSection() {
+        return this.chunk.getMaxSection();
+    }
+
+    @Override
     public CompoundTag getHeightMaps() {
         // HeightMap
         CompoundMap heightMaps = new CompoundMap();

@@ -26,6 +26,9 @@ public class CraftSlimeChunk implements SlimeChunk {
     private final List<CompoundTag> tileEntities;
     private final List<CompoundTag> entities;
 
+    private final int minSection;
+    private final int maxSection;
+
     // Optional data for 1.13 world upgrading
     private CompoundTag upgradeData;
 }

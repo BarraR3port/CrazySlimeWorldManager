@@ -207,7 +207,7 @@ public class WorldImporter {
         int chunkX = compound.getAsIntTag("xPos").get().getValue();
         int chunkZ = compound.getAsIntTag("zPos").get().getValue();
 
-        if (worldVersion >= 0x08) { // 1.18 worlds should have a DataVersion tag, we can check if the chunk has been converted to match the world
+        if (worldVersion >= 0x08) { // 1.18 chunks should have a DataVersion tag, we can check if the chunk has been converted to match the world
             int dataVersion = convertDataVersionToWorldVersion(compound.getAsIntTag("DataVersion").map(IntTag::getValue).orElse(-1));
             if (dataVersion != worldVersion) {
                 System.err.println("Cannot load chunk at " + chunkX + "," + chunkZ + ": data version " + dataVersion + " does not match world version " + worldVersion);
@@ -250,6 +250,10 @@ public class WorldImporter {
         List<CompoundTag> tileEntities;
         List<CompoundTag> entities;
         ListTag<CompoundTag> sectionsTag;
+
+        int minSectionY = 0;
+        int maxSectionY = 16;
+
         if (worldVersion < 0x08) {
             tileEntities = ((ListTag<CompoundTag>) compound.getAsListTag("TileEntities")
                     .orElse(new ListTag<>("TileEntities", TagType.TAG_COMPOUND, new ArrayList<>()))).getValue();
@@ -262,6 +266,9 @@ public class WorldImporter {
             entities = ((ListTag<CompoundTag>) compound.getAsListTag("entities")
                     .orElse(new ListTag<>("entities", TagType.TAG_COMPOUND, new ArrayList<>()))).getValue();
             sectionsTag = (ListTag<CompoundTag>) compound.getAsListTag("sections").get();
+
+            minSectionY = compound.getIntValue("yPos").orElseThrow();
+            maxSectionY = sectionsTag.getValue().stream().map(c -> c.getByteValue("Y").orElseThrow()).max(Byte::compareTo).orElse((byte) 0);
         }
         SlimeChunkSection[] sectionArray = new SlimeChunkSection[sectionsTag.getValue().size()];
 
@@ -269,8 +276,12 @@ public class WorldImporter {
             int index = sectionTag.getByteValue("Y").get();
 
             if (index < 0) {
-                // For some reason MC 1.14 worlds contain an empty section with Y = -1.
-                continue;
+                if (worldVersion < 0x07) {
+                    // For some reason MC 1.14 worlds contain an empty section with Y = -1, however 1.17+ worlds can use these sections
+                    continue;
+                } else if (!sectionTag.getAsCompoundTag("block_states").isPresent() && !sectionTag.getAsCompoundTag("biomes").isPresent()) {
+                    continue; // empty section
+                }
             }
 
             byte[] blocks = sectionTag.getByteArrayValue("Blocks").orElse(null);
@@ -295,19 +306,19 @@ public class WorldImporter {
                     continue;
                 }
             } else {
-                blockStatesTag = sectionTag.getAsCompoundTag("block_states").get();
-                biomeTag = sectionTag.getAsCompoundTag("biomes").get();
+                blockStatesTag = sectionTag.getAsCompoundTag("block_states").orElseThrow();
+                biomeTag = sectionTag.getAsCompoundTag("biomes").orElseThrow();
             }
 
             NibbleArray blockLightArray = sectionTag.getValue().containsKey("BlockLight") ? new NibbleArray(sectionTag.getByteArrayValue("BlockLight").get()) : null;
             NibbleArray skyLightArray = sectionTag.getValue().containsKey("SkyLight") ? new NibbleArray(sectionTag.getByteArrayValue("SkyLight").get()) : null;
 
-            sectionArray[index] = new CraftSlimeChunkSection(index, blocks, dataArray, paletteTag, blockStatesArray, blockStatesTag, biomeTag, blockLightArray, skyLightArray);
+            sectionArray[index - minSectionY] = new CraftSlimeChunkSection(index, blocks, dataArray, paletteTag, blockStatesArray, blockStatesTag, biomeTag, blockLightArray, skyLightArray);
         }
 
         for (SlimeChunkSection section : sectionArray) {
             if (section != null) { // Chunk isn't empty
-                return new CraftSlimeChunk(null, chunkX, chunkZ, sectionArray, heightMapsCompound, biomes, tileEntities, entities);
+                return new CraftSlimeChunk(null, chunkX, chunkZ, sectionArray, heightMapsCompound, biomes, tileEntities, entities, minSectionY, maxSectionY);
             }
         }
 

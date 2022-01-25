@@ -353,6 +353,9 @@ public class SWMImporter {
     }
 
     private static SlimeChunk readChunk(CompoundTag compound, List<CompoundTag> entityList, byte worldVersion) {
+        if (true) {
+            throw new UnsupportedOperationException("Not implemented yet."); // todo copy from WorldImporter
+        }
         int chunkX = compound.getAsIntTag("xPos").get().getValue();
         int chunkZ = compound.getAsIntTag("zPos").get().getValue();
         Optional<String> status = compound.getStringValue("Status");
@@ -435,7 +438,7 @@ public class SWMImporter {
 
         for (SlimeChunkSection section : sectionArray) {
             if (section != null) { // Chunk isn't empty
-                return new CraftSlimeChunk(null, chunkX, chunkZ, sectionArray, heightMapsCompound, biomes, tileEntities, entities);
+                return new CraftSlimeChunk(null, chunkX, chunkZ, sectionArray, heightMapsCompound, biomes, tileEntities, entities, 0, sectionArray.length);
             }
         }
 

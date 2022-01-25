@@ -199,6 +199,8 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
 
                     if (ex instanceof IllegalArgumentException) {
                         message = ex.getMessage();
+
+                        ex.printStackTrace();
                     } else if (ex instanceof UnknownWorldException) {
                         message = "world does not exist, are you sure you've set the correct data source?";
                     } else if (ex instanceof NewerFormatException) {

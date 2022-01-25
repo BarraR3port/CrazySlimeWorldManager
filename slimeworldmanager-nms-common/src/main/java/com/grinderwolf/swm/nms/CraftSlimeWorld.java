@@ -276,7 +276,7 @@ public class CraftSlimeWorld implements SlimeWorld {
 
             // Chunk sections
             SlimeChunkSection[] sections = chunk.getSections();
-            if (worldVersion < 0x08) {
+            if (worldVersion < 0x07) {
                 BitSet sectionBitmask = new BitSet(16);
 
                 for (int i = 0; i < sections.length; i++) {
@@ -341,12 +341,15 @@ public class CraftSlimeWorld implements SlimeWorld {
                     }
                 }
             } else {
-                outStream.writeInt(sections.length);
+                outStream.writeInt(chunk.getMinSection());
+                outStream.writeInt(chunk.getMaxSection());
                 outStream.writeInt(Math.toIntExact(Arrays.stream(sections).filter(Objects::nonNull).count()));
+
                 for (SlimeChunkSection section : sections) {
                     if (section == null) {
                         continue;
                     }
+
                     outStream.writeInt(section.getSectionIndex());
 
                     // Block Light

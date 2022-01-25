@@ -55,7 +55,7 @@ public class v1_16WorldUpgrade implements Upgrade {
 
             world.updateChunk(new CraftSlimeChunk(chunk.getWorldName(), chunk.getX(), chunk.getZ(),
                     chunk.getSections(), chunk.getHeightMaps(), newBiomes,
-                    chunk.getTileEntities(), chunk.getEntities(), ((CraftSlimeChunk) chunk).getUpgradeData()));
+                    chunk.getTileEntities(), chunk.getEntities(), 0, 16, ((CraftSlimeChunk) chunk).getUpgradeData()));
         }
     }
 

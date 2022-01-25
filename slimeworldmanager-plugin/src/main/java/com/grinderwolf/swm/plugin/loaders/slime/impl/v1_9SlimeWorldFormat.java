@@ -13,6 +13,7 @@ import com.grinderwolf.swm.nms.CraftSlimeChunk;
 import com.grinderwolf.swm.nms.CraftSlimeChunkSection;
 import com.grinderwolf.swm.nms.CraftSlimeWorld;
 import com.grinderwolf.swm.plugin.loaders.slime.SlimeWorldReader;
+import lombok.Data;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -281,10 +282,10 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
                     }
 
                     // Chunk Sections
-                    SlimeChunkSection[] sections = worldVersion < 0x08 ? readChunkSections(dataStream, worldVersion, version) : readChunkSectionsNew(dataStream, worldVersion, version);
+                    ChunkSectionData data = worldVersion < 0x08 ? readChunkSections(dataStream, worldVersion, version) : readChunkSectionsNew(dataStream, worldVersion, version);
 
                     chunkMap.put(((long) minZ + z) * Integer.MAX_VALUE + ((long) minX + x), new CraftSlimeChunk(worldName,minX + x, minZ + z,
-                            sections, heightMaps, biomes, new ArrayList<>(), new ArrayList<>()));
+                            data.sections, heightMaps, biomes, new ArrayList<>(), new ArrayList<>(), data.minSectionY, data.maxSectionY));
                 }
             }
         }
@@ -301,10 +302,18 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
         return ret;
     }
 
-    private static SlimeChunkSection[] readChunkSectionsNew(DataInputStream dataStream, int worldVersion, int version) throws IOException {
-        int maxSections = dataStream.readInt();
+    @Data
+    private static class ChunkSectionData {
+        private final SlimeChunkSection[] sections;
+        private final int minSectionY;
+        private final int maxSectionY;
+    }
+
+    private static ChunkSectionData readChunkSectionsNew(DataInputStream dataStream, int worldVersion, int version) throws IOException {
+        int minSectionY = dataStream.readInt();
+        int maxSectionY = dataStream.readInt();
         int sectionCount = dataStream.readInt();
-        SlimeChunkSection[] chunkSectionArray = new SlimeChunkSection[maxSections];
+        SlimeChunkSection[] chunkSectionArray = new SlimeChunkSection[maxSectionY - minSectionY + 1];
 
         for (int i = 0; i < sectionCount; i++) {
             int y = dataStream.readInt();
@@ -346,13 +355,13 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
                 dataStream.skip(hypixelBlocksLength);
             }
 
-            chunkSectionArray[y] = new CraftSlimeChunkSection(y, null, null, null, null, blockStateTag, biomeTag, blockLightArray, skyLightArray);
+            chunkSectionArray[y - minSectionY] = new CraftSlimeChunkSection(y, null, null, null, null, blockStateTag, biomeTag, blockLightArray, skyLightArray);
         }
 
-        return chunkSectionArray;
+        return new ChunkSectionData(chunkSectionArray, minSectionY, maxSectionY);
     }
 
-    private static SlimeChunkSection[] readChunkSections(DataInputStream dataStream, byte worldVersion, int version) throws IOException {
+    private static ChunkSectionData readChunkSections(DataInputStream dataStream, byte worldVersion, int version) throws IOException {
         SlimeChunkSection[] chunkSectionArray = new SlimeChunkSection[16];
         byte[] sectionBitmask = new byte[2];
         dataStream.read(sectionBitmask);
@@ -437,7 +446,7 @@ public class v1_9SlimeWorldFormat implements SlimeWorldReader {
             }
         }
 
-        return chunkSectionArray;
+        return new ChunkSectionData(chunkSectionArray, 0, 16);
     }
 
     private static CompoundTag readCompoundTag(byte[] serializedCompound) throws IOException {
