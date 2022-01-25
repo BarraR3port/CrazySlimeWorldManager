@@ -275,13 +275,9 @@ public class WorldImporter {
         for (CompoundTag sectionTag : sectionsTag.getValue()) {
             int index = sectionTag.getByteValue("Y").get();
 
-            if (index < 0) {
-                if (worldVersion < 0x07) {
-                    // For some reason MC 1.14 worlds contain an empty section with Y = -1, however 1.17+ worlds can use these sections
-                    continue;
-                } else if (!sectionTag.getAsCompoundTag("block_states").isPresent() && !sectionTag.getAsCompoundTag("biomes").isPresent()) {
-                    continue; // empty section
-                }
+            if (worldVersion < 0x07 && index < 0) {
+                // For some reason MC 1.14 worlds contain an empty section with Y = -1, however 1.17+ worlds can use these sections
+                continue;
             }
 
             byte[] blocks = sectionTag.getByteArrayValue("Blocks").orElse(null);
@@ -306,6 +302,9 @@ public class WorldImporter {
                     continue;
                 }
             } else {
+                if (!sectionTag.getAsCompoundTag("block_states").isPresent() && !sectionTag.getAsCompoundTag("biomes").isPresent()) {
+                    continue; // empty section
+                }
                 blockStatesTag = sectionTag.getAsCompoundTag("block_states").orElseThrow();
                 biomeTag = sectionTag.getAsCompoundTag("biomes").orElseThrow();
             }
