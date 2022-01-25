@@ -136,6 +136,8 @@ public class CustomWorldServer extends ServerLevel {
                 }
             };
         }
+
+        this.keepSpawnInMemory = false;
     }
 
     public static CompletableFuture<Integer> relight(net.minecraft.world.level.Level world, Collection<? extends LevelChunk> chunks) {
