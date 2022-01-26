@@ -51,9 +51,10 @@ public class NMSSlimeChunk implements SlimeChunk {
 
     @Override
     public SlimeChunkSection[] getSections() {
-        SlimeChunkSection[] sections = new SlimeChunkSection[16];
+        SlimeChunkSection[] sections = new SlimeChunkSection[16]; // todo no static number of sections, see 1.18
         LevelLightEngine lightEngine = chunk.getLevel().getChunkSource().getLightEngine();
 
+        // todo 1.17 can have negative sections
         for (int sectionId = 0; sectionId < chunk.getSections().length; sectionId++) {
             LevelChunkSection section = chunk.getSections()[sectionId];
 
@@ -77,7 +78,8 @@ public class NMSSlimeChunk implements SlimeChunk {
                     ListTag<CompoundTag> palette = (ListTag<CompoundTag>) Converter.convertTag("", paletteList);
                     long[] blockStates = blocksCompound.getLongArray("BlockStates");
 
-                    sections[sectionId] = new CraftSlimeChunkSection(sectionId, null, null, palette, blockStates, null, null, blockLightArray, skyLightArray);
+                    int sectionY = sectionId + this.chunk.getMinSection();
+                    sections[sectionId] = new CraftSlimeChunkSection(sectionY, null, null, palette, blockStates, null, null, blockLightArray, skyLightArray);
                 }
             }
         }

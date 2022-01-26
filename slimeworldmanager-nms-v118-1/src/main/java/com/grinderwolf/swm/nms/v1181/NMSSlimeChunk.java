@@ -56,7 +56,7 @@ public class NMSSlimeChunk implements SlimeChunk {
 
     @Override
     public SlimeChunkSection[] getSections() {
-        SlimeChunkSection[] sections = new SlimeChunkSection[this.chunk.getSectionsCount()];
+        SlimeChunkSection[] sections = new SlimeChunkSection[this.chunk.getMaxSection() - this.chunk.getMinSection() + 1];
         LevelLightEngine lightEngine = chunk.getLevel().getChunkSource().getLightEngine();
 
         Registry<Biome> biomeRegistry = chunk.getLevel().registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
@@ -84,8 +84,8 @@ public class NMSSlimeChunk implements SlimeChunk {
                     CompoundTag blockStateTag = (CompoundTag) Converter.convertTag("", blockStateData);
                     CompoundTag biomeTag = (CompoundTag) Converter.convertTag("", biomeData);
 
-
-                    sections[sectionId] = new CraftSlimeChunkSection(sectionId, null, null, null, null, blockStateTag, biomeTag, blockLightArray, skyLightArray);
+                    int sectionY = sectionId + this.chunk.getMinSection();
+                    sections[sectionId] = new CraftSlimeChunkSection(sectionY, null, null, null, null, blockStateTag, biomeTag, blockLightArray, skyLightArray);
                 }
             }
         }

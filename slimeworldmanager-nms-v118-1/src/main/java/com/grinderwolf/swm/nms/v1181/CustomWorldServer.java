@@ -191,8 +191,9 @@ public class CustomWorldServer extends ServerLevel {
                 Bukkit.getLogger().log(Level.INFO, "Saving world " + slimeWorld.getName() + "...");
                 long start = System.currentTimeMillis();
                 byte[] serializedWorld = slimeWorld.serialize();
+                long saveStart = System.currentTimeMillis();
                 slimeWorld.getLoader().saveWorld(slimeWorld.getName(), serializedWorld, false);
-                Bukkit.getLogger().log(Level.INFO, "World " + slimeWorld.getName() + " saved in " + (System.currentTimeMillis() - start) + "ms.");
+                Bukkit.getLogger().log(Level.INFO, "World " + slimeWorld.getName() + " serialized in " + (saveStart - start) + "ms and saved in " + (System.currentTimeMillis() - saveStart) + "ms.");
             } catch (IOException | IllegalStateException ex) {
                 ex.printStackTrace();
             }
@@ -347,9 +348,6 @@ public class CustomWorldServer extends ServerLevel {
         LevelChunk nmsChunk = new LevelChunk(this, pos,
                 upgradeDataTag == null ? UpgradeData.EMPTY : new UpgradeData((net.minecraft.nbt.CompoundTag) Converter.convertTag(upgradeDataTag), this),
                 blockLevelChunkTicks, fluidLevelChunkTicks, 0L, sections, loadEntities, null);
-
-//        chunk = new LevelChunk(this, pos, UpgradeData.EMPTY, blockLevelChunkTicks, fluidLevelChunkTicks,
-//                0L, null, null, null);
 
         // Height Maps
         EnumSet<Heightmap.Types> heightMapTypes = nmsChunk.getStatus().heightmapsAfter();

@@ -148,9 +148,7 @@ public class v1181SlimeNMS implements SlimeNMS {
             throw new IllegalArgumentException("World " + worldName + " already exists! Maybe it's an outdated SlimeWorld object?");
         }
 
-        System.out.println("WORLD: " + world);
         PrimaryLevelData worldDataServer = createWorldData(world);
-        System.out.println("WDS: " + worldDataServer);
         World.Environment environment = getEnvironment(world);
         ResourceKey<LevelStem> dimension;
 
@@ -198,13 +196,11 @@ public class v1181SlimeNMS implements SlimeNMS {
         MinecraftServer mcServer = MinecraftServer.getServer();
         mcServer.initWorld(server, worldDataServer, mcServer.getWorldData(), worldDataServer.worldGenSettings());
 
-        mcServer.server.addWorld(server.getWorld());
         mcServer.levels.put(worldKey, server);
 
         server.setSpawnSettings(world.getPropertyMap().getValue(SlimeProperties.ALLOW_MONSTERS), world.getPropertyMap().getValue(SlimeProperties.ALLOW_ANIMALS));
 
         Bukkit.getPluginManager().callEvent(new WorldInitEvent(server.getWorld()));
-        mcServer.prepareLevels(server.chunkSource.chunkMap.progressListener, server);
 //        try {
 //            world.getLoader().loadWorld(worldName, world.isReadOnly());
 //        } catch(UnknownWorldException | WorldInUseException | IOException e) {

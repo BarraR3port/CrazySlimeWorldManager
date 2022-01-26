@@ -44,7 +44,7 @@ import java.util.zip.ZipFile;
 public class NMSTransformer implements ClassFileTransformer {
 
     private static final Pattern PATTERN = Pattern.compile("^(\\w+)\\s*\\((.*?)\\)\\s*@(.+?\\.txt)$");
-    private static final boolean DEBUG = true; //Boolean.getBoolean("clsmDebug");
+    private static final boolean DEBUG = Boolean.getBoolean("clsmDebug");
 
     private static final Map<String, Map<String, Change[]>> versionChanges = new HashMap<>();
 
@@ -205,7 +205,6 @@ public class NMSTransformer implements ClassFileTransformer {
                             final byte[] contents = readAllBytes(zipFile.getInputStream(zipEntry));
                             final Map<String, String> versionInfo = new Yaml().load(new String(contents, StandardCharsets.UTF_8));
                             this.version = getNMSVersion(versionInfo.get("id"));
-                            System.out.println("Loaded version " + this.version + "has changes: " + versionChanges.containsKey(this.version));
 
                             this.filesChecked = null; // allow collection
                         }
@@ -241,16 +240,6 @@ public class NMSTransformer implements ClassFileTransformer {
                         ClassPool pool = ClassPool.getDefault();
                         pool.appendClassPath(new LoaderClassPath(classLoader));
                         pool.appendClassPath(new LoaderClassPath(NMSTransformer.class.getClassLoader()));
-
-                        try {
-                            System.out.println("Found: " + Class.forName(
-                                    ClassModifier.class.getName(),
-                                    true,
-                                    ClassLoader.getSystemClassLoader()));
-                        } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
-                        }
-                        pool.appendSystemPath();
 
                         CtClass ctClass = pool.get(fixedClassName);
 
@@ -294,7 +283,6 @@ public class NMSTransformer implements ClassFileTransformer {
                             }
                         }
 
-                        System.out.println("Patched " + ctClass.getName());
                         return ctClass.toBytecode();
                     } catch (NotFoundException | CannotCompileException | IOException ex) {
                         System.err.println("Failed to override methods from class " + fixedClassName + ".");

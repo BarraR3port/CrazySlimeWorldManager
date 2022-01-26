@@ -149,9 +149,7 @@ public class v1171SlimeNMS implements SlimeNMS {
             throw new IllegalArgumentException("World " + worldName + " already exists! Maybe it's an outdated SlimeWorld object?");
         }
 
-        System.out.println("WORLD: " + world);
         PrimaryLevelData worldDataServer = createWorldData(world);
-        System.out.println("WDS: " + worldDataServer);
         World.Environment environment = getEnvironment(world);
         ResourceKey<LevelStem> dimension;
 
