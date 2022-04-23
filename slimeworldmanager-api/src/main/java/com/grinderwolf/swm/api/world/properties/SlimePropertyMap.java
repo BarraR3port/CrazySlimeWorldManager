@@ -100,4 +100,7 @@ public class SlimePropertyMap {
     public String toString() {
         return "SlimePropertyMap" + properties;
     }
+    
+    
+    
 }

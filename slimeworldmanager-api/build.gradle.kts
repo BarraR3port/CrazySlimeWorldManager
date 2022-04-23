@@ -1,10 +1,21 @@
 plugins {
     `java-library`
+    `maven-publish`
 }
 
 dependencies {
     implementation("com.flowpowered:flow-nbt:2.0.2")
-    compileOnly("io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT")
+    implementation("org.jetbrains:annotations:20.1.0")
+    compileOnly("com.destroystokyo.paper:paper-api:1.12.2-R0.1-SNAPSHOT")
 }
 
 description = "slimeworldmanager-api"
+
+configure<PublishingExtension> {
+    publications.create<MavenPublication>("maven") {
+        from(components["java"])
+        version = "2.7.0"
+        groupId = "com.grinderwolf.swm"
+        artifactId = "slimeworldmanager-api"
+    }
+}

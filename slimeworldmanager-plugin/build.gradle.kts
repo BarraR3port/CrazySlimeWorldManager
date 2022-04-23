@@ -5,8 +5,10 @@ plugins {
 dependencies {
     implementation(project(":slimeworldmanager-api"))
     implementation(project(":slimeworldmanager-nms-common"))
-    implementation(project(":slimeworldmanager-nms-v117-1", "reobf"))
-    implementation(project(":slimeworldmanager-nms-v118-1", "reobf"))
+    implementation(project(":slimeworldmanager-nms-v112"))
+    implementation(project(":slimeworldmanager-nms-v116"))
+    implementation(project(":slimeworldmanager-nms-v117", "reobf"))
+    implementation(project(":slimeworldmanager-nms-v118", "reobf"))
 
     implementation("com.flowpowered:flow-nbt:2.0.2")
     implementation("com.github.luben:zstd-jni:1.4.9-5")
@@ -16,7 +18,7 @@ dependencies {
     implementation("org.spongepowered:configurate-yaml:3.7-SNAPSHOT")
     implementation("org.bstats:bstats-bukkit:1.5")
     implementation("commons-io:commons-io:2.8.0")
-    compileOnly("io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT")
+    compileOnly("com.destroystokyo.paper:paper-api:1.12.2-R0.1-SNAPSHOT")
 }
 
 tasks {
@@ -37,3 +39,12 @@ tasks {
 }
 
 description = "slimeworldmanager-plugin"
+
+configure<PublishingExtension> {
+    publications.create<MavenPublication>("maven") {
+        from(components["java"])
+        version = "2.7.0"
+        groupId = "com.grinderwolf.swm"
+        artifactId = "slimeworldmanager-plugin"
+    }
+}

@@ -14,7 +14,6 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -63,7 +62,7 @@ public class UnloadWorldCmd implements Subcommand {
 
         if (!players.isEmpty()) {
             Location spawnLocation = findValidDefaultSpawn();
-            players.forEach(player -> player.teleportAsync(spawnLocation));
+            players.forEach(player -> player.teleport(spawnLocation));
         }
 
         if (!Bukkit.unloadWorld(world, true)) {
@@ -87,7 +86,7 @@ public class UnloadWorldCmd implements Subcommand {
         return true;
     }
 
-    @NotNull
+    
     private Location findValidDefaultSpawn() {
         var defaultWorld = Bukkit.getWorlds().get(0);
         var spawnLocation = defaultWorld.getSpawnLocation();

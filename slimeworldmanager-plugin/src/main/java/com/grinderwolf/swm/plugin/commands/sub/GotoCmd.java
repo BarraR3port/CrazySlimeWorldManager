@@ -66,12 +66,8 @@ public class GotoCmd implements Subcommand {
             }else{
                 spawnLocation = world.getSpawnLocation();
             }
-
-            if(SWMPlugin.isPaperMC()) {
-                target.teleportAsync(spawnLocation);
-            }else {
-                target.teleport(spawnLocation);
-            }
+    
+            target.teleport(spawnLocation);
 
             return true;
         }

@@ -1,10 +1,7 @@
-plugins {
-    id("io.papermc.paperweight.userdev") version "1.3.3"
-}
+
 
 dependencies {
-    paperDevBundle("1.17.1-R0.1-SNAPSHOT")
-    compileOnly("io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot:1.16.5-R0.1-SNAPSHOT")
     compileOnly(project(":slimeworldmanager-nms-common"))
     compileOnly(project(":slimeworldmanager-api"))
     compileOnly(project(":slimeworldmanager-classmodifierapi"))
@@ -14,8 +11,8 @@ dependencies {
 
 tasks {
     assemble {
-        dependsOn(reobfJar)
+
     }
 }
 
-description = "slimeworldmanager-nms-v117-1"
+description = "slimeworldmanager-nms-v116"
