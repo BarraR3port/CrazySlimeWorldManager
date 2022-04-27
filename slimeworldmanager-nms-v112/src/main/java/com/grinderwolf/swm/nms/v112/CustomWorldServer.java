@@ -47,6 +47,21 @@ public class CustomWorldServer extends WorldServer {
         
         this.pvpMode = propertyMap.getValue(SlimeProperties.PVP);
         
+        this.worldMaps = new PersistentCollection( dataManager );
+        this.scoreboard = getScoreboard();
+        this.B = getLootTableRegistry();
+        this.C = z();
+        String s = PersistentVillage.a(this.worldProvider);
+        PersistentVillage persistentvillage = (PersistentVillage) this.worldMaps.get(PersistentVillage.class, s);
+    
+        if (persistentvillage == null) {
+            this.villages = new PersistentVillage(this);
+            this.worldMaps.a(s, this.villages);
+        } else {
+            this.villages = persistentvillage;
+            this.villages.a(this);
+        }
+        
         // Load all chunks
         CustomChunkLoader chunkLoader = ((CustomDataManager) this.getDataManager()).getChunkLoader();
         chunkLoader.loadAllChunks(this);

@@ -6,7 +6,7 @@ public interface Upgrade {
 
     void upgrade(CraftSlimeWorld world);
 
-    @Deprecated(since = "2.6.2", forRemoval = true)
+    @Deprecated()
     default void downgrade(CraftSlimeWorld world) {
         throw new UnsupportedOperationException("Not implemented anymore.");
     }

@@ -267,8 +267,8 @@ public class WorldImporter {
                     .orElse(new ListTag<>("entities", TagType.TAG_COMPOUND, new ArrayList<>()))).getValue();
             sectionsTag = (ListTag<CompoundTag>) compound.getAsListTag("sections").get();
 
-            minSectionY = compound.getIntValue("yPos").orElseThrow();
-            maxSectionY = sectionsTag.getValue().stream().map(c -> c.getByteValue("Y").orElseThrow()).max(Byte::compareTo).orElse((byte) 0);
+            minSectionY = compound.getIntValue("yPos").orElseThrow( () -> new IllegalStateException("Chunk has no yPos"));
+            maxSectionY = sectionsTag.getValue().stream().map(c -> c.getByteValue("Y").orElseThrow( () -> new IllegalStateException("Chunk has no yPos") )).max(Byte::compareTo).orElse((byte) 0);
         }
         SlimeChunkSection[] sectionArray = new SlimeChunkSection[sectionsTag.getValue().size()];
 
@@ -305,8 +305,8 @@ public class WorldImporter {
                 if (!sectionTag.getAsCompoundTag("block_states").isPresent() && !sectionTag.getAsCompoundTag("biomes").isPresent()) {
                     continue; // empty section
                 }
-                blockStatesTag = sectionTag.getAsCompoundTag("block_states").orElseThrow();
-                biomeTag = sectionTag.getAsCompoundTag("biomes").orElseThrow();
+                blockStatesTag = sectionTag.getAsCompoundTag("block_states").orElseThrow( () -> new IllegalStateException("block_states tag is missing"));
+                biomeTag = sectionTag.getAsCompoundTag("biomes").orElseThrow(() -> new IllegalStateException("biomes tag is missing"));
             }
 
             NibbleArray blockLightArray = sectionTag.getValue().containsKey("BlockLight") ? new NibbleArray(sectionTag.getByteArrayValue("BlockLight").get()) : null;

@@ -1,6 +1,7 @@
 package com.grinderwolf.swm.plugin.commands.sub;
 
 import com.grinderwolf.swm.api.exceptions.UnknownWorldException;
+import com.grinderwolf.swm.api.loaders.SlimeLoader;
 import com.grinderwolf.swm.plugin.config.ConfigManager;
 import com.grinderwolf.swm.plugin.config.WorldData;
 import com.grinderwolf.swm.plugin.config.WorldsConfig;
@@ -14,6 +15,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -33,8 +35,8 @@ public class UnloadWorldCmd implements Subcommand {
             return false;
         }
 
-        var worldName = args[0];
-        var world = Bukkit.getWorld(args[0]);
+        String worldName = args[0];
+        World world = Bukkit.getWorld(args[0]);
 
         if (world == null) {
             sender.sendMessage(Logging.COMMAND_PREFIX + ChatColor.RED + "World " + worldName + " is not loaded!");
@@ -55,10 +57,10 @@ public class UnloadWorldCmd implements Subcommand {
             }
         }
 
-        var loader = source == null ? null : LoaderUtils.getLoader(source);
+        SlimeLoader loader = source == null ? null : LoaderUtils.getLoader(source);
 
         // Teleport all players outside the world before unloading it
-        var players = world.getPlayers();
+        List< Player > players = world.getPlayers();
 
         if (!players.isEmpty()) {
             Location spawnLocation = findValidDefaultSpawn();
@@ -88,8 +90,8 @@ public class UnloadWorldCmd implements Subcommand {
 
     
     private Location findValidDefaultSpawn() {
-        var defaultWorld = Bukkit.getWorlds().get(0);
-        var spawnLocation = defaultWorld.getSpawnLocation();
+        World defaultWorld = Bukkit.getWorlds().get(0);
+        Location spawnLocation = defaultWorld.getSpawnLocation();
 
         spawnLocation.setY(64);
         while (spawnLocation.getBlock().getType() != Material.AIR || spawnLocation.getBlock().getRelative(BlockFace.UP).getType() != Material.AIR) {

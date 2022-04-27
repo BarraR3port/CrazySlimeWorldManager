@@ -38,7 +38,7 @@ public class WorldUpgrader {
         world.setVersion(serverVersion);
     }
 
-    @Deprecated(since = "2.6.2", forRemoval = true)
+    @Deprecated()
     public static void downgradeWorld(CraftSlimeWorld world) {
         throw new UnsupportedOperationException("Not implemented anymore.");
     }

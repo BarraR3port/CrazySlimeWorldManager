@@ -223,7 +223,7 @@ public class NMSTransformer implements ClassFileTransformer {
             }
         }
 
-        final var changes = versionChanges.get(this.version);
+        final Map <String, Change[]> changes = versionChanges.get(this.version);
         if (changes != null) {
             if (className != null) {
                 if (changes.containsKey(className)) {

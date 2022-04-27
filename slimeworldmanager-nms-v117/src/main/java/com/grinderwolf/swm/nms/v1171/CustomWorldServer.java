@@ -288,7 +288,7 @@ public class CustomWorldServer extends ServerLevel {
 //        getChunkProvider().addTicket(SWM_TICKET, pos, 33, Unit.INSTANCE);
 
         Consumer<LevelChunk> loadEntities = (nmsChunk) -> {
-            relight(this, List.of(nmsChunk));
+            relight(this, Collections.singletonList(nmsChunk));
 
             // Load tile entities
 //            System.out.println("Loading tile entities for chunk (" + pos.x + ", " + pos.z + ") on world " + slimeWorld.getName());

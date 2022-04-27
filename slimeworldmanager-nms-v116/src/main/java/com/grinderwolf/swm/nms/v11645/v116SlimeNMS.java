@@ -135,22 +135,19 @@ public class v116SlimeNMS implements SlimeNMS {
 
         WorldDataServer worldDataServer = createWorldData(world);
         World.Environment environment = getEnvironment(world);
-        ResourceKey<WorldDimension> dimension;
-
-        switch(environment) {
-            case NORMAL:
+        ResourceKey<WorldDimension> dimension = null;
+        switch ( environment ) {
+            case NORMAL : {
                 dimension = WorldDimension.OVERWORLD;
-                break;
-            case NETHER:
+            }
+            case NETHER : {
                 dimension = WorldDimension.THE_NETHER;
-                break;
-            case THE_END:
+            }
+            case THE_END : {
                 dimension = WorldDimension.THE_END;
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown dimension supplied");
+            }
         }
-
+    
         RegistryMaterials<WorldDimension> materials = worldDataServer.getGeneratorSettings().d();
         WorldDimension worldDimension = materials.a(dimension);
         DimensionManager dimensionManager = worldDimension.b();

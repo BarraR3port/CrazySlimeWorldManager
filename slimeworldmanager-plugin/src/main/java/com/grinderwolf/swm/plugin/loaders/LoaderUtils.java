@@ -103,7 +103,7 @@ public class LoaderUtils {
         loaderMap.put(dataSource, loader);
     }
 
-    @Deprecated(since = "2.6.2", forRemoval = true)
+    @Deprecated()
     public static CraftSlimeWorld deserializeWorld(SlimeLoader loader, String worldName, byte[] serializedWorld, SlimePropertyMap propertyMap, boolean readOnly)
             throws IOException, CorruptedWorldException, NewerFormatException {
         return SlimeWorldReaderRegistry.readWorld(loader, worldName, serializedWorld, propertyMap, readOnly);

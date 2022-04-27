@@ -4,14 +4,18 @@ import com.grinderwolf.swm.api.world.SlimeWorld;
 import com.grinderwolf.swm.api.world.properties.SlimeProperties;
 import com.grinderwolf.swm.nms.CraftSlimeWorld;
 import com.grinderwolf.swm.nms.SlimeNMS;
+import com.grinderwolf.swm.nms.VoidGenerator;
 import lombok.Getter;
+import net.minecraft.server.v1_12_R1.DimensionManager;
 import net.minecraft.server.v1_12_R1.MinecraftServer;
 import net.minecraft.server.v1_12_R1.WorldServer;
+import net.minecraft.server.v1_12_R1.WorldSettings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.WorldCreator;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldLoadEvent;
@@ -89,7 +93,51 @@ public class v112SlimeNMS implements SlimeNMS {
     
     @Override
     public void generateWorld(SlimeWorld world) {
-        addWorldToServerList(createNMSWorld(world));
+        /*String worldName = world.getName();
+    
+        if (Bukkit.getWorld(worldName) != null) {
+            throw new IllegalArgumentException("World " + worldName + " already exists! Maybe it's an outdated SlimeWorld object?");
+        }
+        MinecraftServer mcServer = MinecraftServer.getServer();
+    
+        CustomDataManager dataManager = new CustomDataManager(world);
+        int dimension = CraftWorld.CUSTOM_DIMENSION_OFFSET + mcServer.worlds.size();
+        boolean used = false;
+    
+        do {
+            for (WorldServer server : mcServer.worlds) {
+                used = server.dimension == dimension;
+            
+                if (used) {
+                    dimension++;
+                    break;
+                }
+            }
+        } while (used);
+        
+        CustomWorldServer server = new CustomWorldServer((CraftSlimeWorld) world, dataManager, dimension);
+    
+        LOGGER.info("Loading world " + worldName);
+        long startTime = System.currentTimeMillis();
+    
+        server.setReady(true);
+        mcServer.server.addWorld(server.getWorld());
+        mcServer.worlds.add(server);
+    
+    
+        Bukkit.getPluginManager().callEvent(new WorldInitEvent(server.getWorld()));
+    
+        if (server.getWorld().getKeepSpawnInMemory()) {
+            LOGGER.debug("Preparing start region for dimension '{}'/{}", worldName, DimensionManager.a(0));
+        }
+    
+        Bukkit.getPluginManager().callEvent(new WorldLoadEvent(server.getWorld()));
+    
+        LOGGER.info("World " + worldName + " loaded in " + (System.currentTimeMillis() - startTime) + "ms.");*/
+        WorldCreator creator = new WorldCreator(world.getName());
+        creator.generator(new VoidGenerator());
+        creator.createWorld();
+        //addWorldToServerList(createNMSWorld(world));
     }
     
     
@@ -124,10 +172,10 @@ public class v112SlimeNMS implements SlimeNMS {
     public SlimeWorld getSlimeWorld(World world) {
         CraftWorld craftWorld = (CraftWorld) world;
         
-        if (!(craftWorld.getHandle( ) instanceof CustomWorldServer worldServer)) {
+        if (!(craftWorld.getHandle( ) instanceof CustomWorldServer)) {
             return null;
         }
-    
+        CustomWorldServer  worldServer = (CustomWorldServer) craftWorld.getHandle();
         return worldServer.getSlimeWorld();
     }
 }
